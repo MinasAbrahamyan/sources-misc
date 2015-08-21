@@ -2,3 +2,5 @@
 /misc-Research-libs - Ярлык.lnk
 /ppi_out1.txt
 /ppi.py_bu
+dump.*
+*.pyc
