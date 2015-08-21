@@ -1,6 +1,7 @@
 #!env /usr/bin/python 
 # split_in_place.py - split big file in place by chunks, with optional specified size 
 # Works in both python2 and python3
+# Better name: slice a file
 import os, sys, os.path
 _1Mb = 1024*1024
 
@@ -33,6 +34,7 @@ def copy_tail(fname, cur_chunk_fname, chunk_sz):
   "chunk_sz is in bytes, everywhere in program"
   buf = "" #declare buffer
   j=0
+  total_read= 0
   try:
     fin = open(fname, "rb")
     fout = open(cur_chunk_fname, "wb")
@@ -41,7 +43,6 @@ def copy_tail(fname, cur_chunk_fname, chunk_sz):
     if endpos - chunk_sz<0:  
       print( "Error! copy_tail() negative offset")
     fin.seek(-1*chunk_sz, os.SEEK_END) #negative offset 
-    total_read= 0
     while True:
       buf = fin.read(_1Mb) #copy chunk size, here it is 1Mb  #for debug it was set _1Mb/2 
       read_sz = len(buf)
@@ -50,7 +51,7 @@ def copy_tail(fname, cur_chunk_fname, chunk_sz):
       fout.write(buf)
       fout.flush()
       
-      #-\/sys.stderr.write("#")
+      sys.stderr.write("#")
       total_read += read_sz
       
       j+=1
@@ -59,12 +60,13 @@ def copy_tail(fname, cur_chunk_fname, chunk_sz):
       if False and j>127: #0/1===release/test, 127 = magic test no.
         print ("\ntest break:i=%s Mb" %j)  #warn the user
         break #!
-  except IOError:
-   print ("Error: can\'t write file %s" %cur_chunk_fname)
+  except IOError,e:
+   print ("Error: can\'t write file %s: %s" %(cur_chunk_fname, str(e)) )
+   return False
   else: #else-of-try == finally
    fout.close()
    fin.close()
-   sys.stderr.write("#")
+   return True
    
 def truncate_by(fname, cur_chunk_sz):
   try:
@@ -82,8 +84,7 @@ def truncate_by(fname, cur_chunk_sz):
    fout.close()
   
 def cut_one_chunk_from_end(fname, cur_chunk_sz, i):
-  #-print "cut_one_chunk_from_end(): cur_chunk_sz=", cur_chunk_sz, "i=", i
-  print("i=%d chunk_size="% (i, cur_chunk_sz))
+  print("%d. chunk_size=%d"% (i, cur_chunk_sz))
   if cur_chunk_sz==0:
     return
   
@@ -150,33 +151,107 @@ def main(argv):
 if __name__=='__main__':
   main(sys.argv)
   
-def test(): #test split_file_by_chunks()
+def test_slice(): #test split_file_by_chunks()
   import shutil
   shutil.copy("dump.orig", "dump") 
   split_file_by_chunks("dump", 1000000)
 
- # Reconstruct back: cat
- # >/$ cat dump_*>dump.restored
- # Bug! Windows version of ">" appends '\r' chars after '\n' chars. corrupting restored file.
+# Reconstruct back: cat
+# >/$ cat dump_*>dump.restored
+# Bug! Windows version of ">" appends '\r' chars after '\n' chars. corrupting restored file.
   
- # Reconstruct back: "7z -mx0" (zero-compressor)
- # > 7z x -mx0 dump.7z.001
- # #splitting with 7z on 5Mb chunks is:> 7z a -v5m -mx0 src_file.7z src_file.iso
+# Reconstruct back: "7z -mx0" (zero-compressor)
+# > 7z x -mx0 dump.7z.001
+# #splitting with 7z on 5Mb chunks is:> 7z a -v5m -mx0 src_file.7z src_file.iso
  
- ##=======================================================
- # Rebuild: inplace!
- def get_rebuilding_fname_n_count(fname_001):
-   if fname_001
-   return True
-   
- def rebuild_in_place(fname_001):
-    ok,fname,count = get_rebuilding_fname_n_count(fname_001)
-    if not ok:
-      print("Error trying to rebuild large file: index parsing error")
-      return
-    for i in range(2, count):
-      chunk_fname= fname + ".%03d"%i
-      append_ith_chunk(fname, chunk_fname)
-    print ("done")
+#=======================================================
+# Rebuild: inplace!
+def get_rebuilding_fname_n_count(fname_001):
+  if fname_001[-4] not in [".", "_"]:
+    return False,"",0
+  fname = fname_001[:-4]
+  
+  # Get chunks count
+  # get the first:
+  i=0
+  try:
+    i = int( fname_001[-3:])
+  except ValueError,e:
+    return False,fname,count
+  chunk_fname= fname + ".%03d"%i
+  if not os.path.exists(chunk_fname):
+    return False,fname,0
+  
+  # iterate while possible
+  i=1 #base for "_%03d"  
+  while True:
+    chunk_fname= fname + ".%03d"%i
+    if not os.path.exists(chunk_fname):
+      i-= 1
+      break    
+    i+= 1
+  return True,fname,(i+1)
+  
+def append_n_remove_ith_chunk_file(fname, chunk_fname):
+  ok = False
+  with open(fname,"ab") as fout:
+    with open(chunk_fname, "rb") as fin:
+      ok = copy_data(fin,fout)
+  if ok:
+    os.unlink(chunk_fname)
     
-    
+def copy_data(fin,fout):
+  "note: this function has similar function: copy_tail()"
+  buf = "" #declare buffer
+  j=0
+  total_read= 0
+  try:
+    while True:
+      buf = fin.read(_1Mb) #copy chunk size, here it is 1Mb  #for debug it was set _1Mb/2 
+      read_sz = len(buf)
+      if read_sz==0: #EOF?
+        break
+      fout.write(buf)
+      fout.flush()
+      
+      sys.stderr.write("#")
+      total_read += read_sz
+      
+      j+=1
+      if j%100==0: # Report progress every 100Mb
+        print ("\b\b\b  %sMb..."%j)
+      if False and j>127: #0/1===release/test, 127 = magic test no.
+        print ("\ntest break:i=%s Mb" %j)  #warn the user
+        break #!
+    return True
+  except IOError,e:
+   print ("Error while copying: %s" %str(e))
+   return False
+
+def rebuild_in_place(fname_001):
+  ok,fname,count = get_rebuilding_fname_n_count(fname_001)
+  if not ok:
+    print("Error finding large file for rebuild: index parsing error or file doesn't exist")
+    return
+  chunk_001_fname= fname + ".%03d"%1
+  os.rename(chunk_001_fname, fname)
+  for i in range(2, count):
+    chunk_fname= fname + ".%03d"%i
+    append_n_remove_ith_chunk_file(fname, chunk_fname)
+  print ("Done. Written %d chunks." %(count-1)) #count-1, since chunks enumeration starts with 1
+
+def test_rebuild(): #test rebuild_in_place(fname_001)
+  # slice
+  import shutil
+  shutil.copy("dump.orig", "dump") 
+  split_file_by_chunks("dump", 1000000)
+  # reglue
+  rebuild_in_place("dump.7z.001")
+
+  x = os.system("fc dump.orig dump.7z")
+  #x = os.system("cmp dump.orig dump.7z") #cmp from MinGW
+  if x==0: #"FC: различия не найдены"
+    "ok"
+    pass
+  
+
