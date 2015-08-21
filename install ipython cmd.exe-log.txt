@@ -1,0 +1,23 @@
+http://ipython.org/ipython-doc/2/install/install.html
+
+===
+C:\Python27\> 
+pip install --upgrade pip
+pip install pyreadline
+pip install ipython
+pip install ipython[all]
+pip install ipython
+
+=== Installing console:
+ IPython by default runs in a terminal window, but the normal terminal application supplied
+ by Microsoft Windows is very primitive. 
+ You may want to download the excellent and free Console[1] application instead, which is a far 
+ superior tool. 
+ You can even configure Console to give you by default an IPython tab, which is very convenient 
+ to create new IPython sessions directly from the working terminal.
+[1] 
+http://sourceforge.net/projects/console/
+http://sourceforge.net/projects/console/files/latest/download
+===
+
+

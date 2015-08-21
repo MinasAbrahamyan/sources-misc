@@ -1,0 +1,50 @@
+ // http://en.wikipedia.org/wiki/Comparison_of_e-book_readers
+ //  go & sort by PPI descending
+ 
+Acer Aspire 5920  , 15.4" : 	98.0
+Apple iPhone 4S , 3.5" : 	329.7
+Samsung SyncMaster 720B , 17.0" : 	96.4
+ONDA v975m , 9.7" : 	263.9
+Samsung Galaxy Tab Pro 8.4 , 8.4" : 	359.4
+Xiaomi MiPad 2014 , 7.9" : 	324.1
+
+Google Nexus 7 ASUS (2013) , 7.0" : 	323.5
+Google Nexus 6 Moto (2014) , 6.0" : 	492.8
+Google Nexus 5 LG (2013) , 5.0" : 	445.0
+LG G3 (2014) , 5.5" : 	534.0
+Asus Fonepad Note 6 , 6.0" : 	367.2
+AXGIO NEON N3 5" HD , 5.0" : 	301.9
+
+OnePlus One (2014) , 5.5" : 	400.5
+Elephone P6000 , 5.0" : 	293.7
+//Elephone P6000  5.0" 1280*720 RAM 2Gb Flash 16Gb 13.0Mpx  MTK6732 4core : 293.7
+Alcatel Onetouch Pop C1 , 3.5" : 	164.8
+
+ALLFINE7 7" ATM7029 4Core Android 4.1.1 Tablet with 4K Play & Front Camera , 7.0" : 	169.5
+Ainol 7 Venus Tablet , 7.0" : 	215.6
+
+HyperTAB 7" Capacitive A23 Dual core Tablet Android 4.2 4GB Cam WIFI , 7.0" : 	133.3
+MP Mini S5 Smartphone 4.5 Inch , 4.5" : 	217.7
+Colorfly E708 Q1 7" Android 4.2 Quad-Core IPS , 7.0" : 	215.6
+Axgio Neon N1 5" IPS HD 1.3GHz MTK6582 4-Core OS Neonado-1.0 , 5.0" : 	301.9
+Elephone 2000 5.5" IPS HD 1.7GHz MTK6592 8-core , 5.5" : 	267.0
+
+'ModernMonitor LG 22MP55HQ , 21.5" : 	102.5
+Samsung U28D590D , 28.0" : 	157.4
+stgconn ASUS MB168B+  , 15.6" : 	141.2
+Dell UP2414Q , 23.8" : 	185.1
+Dell Venue 8 Pro , 8.0" : 	188.7
+
+E-book reader:
+Kobo Aura eReader Wi-Fi 6" 4Gb Black Touchscreen , 6.0" : 	211.0
+Nook GlowLight (E Ink) 6" , 6.0" :      212.3
+
+ //from Amazon_Kindle_models_at_2015-02.ods :
+Model	Price	Screen Size	Resolution	Connectivity	Weight	Dimensions
+Kindle	          $79.00 	6" 	167 ppi  Wi-Fi 	191g	169 x 119 x 10.2 mm
+Kindle Paperwhite $119.00 	6" 	212 ppi  Wi-Fi or +3G	206g or 215g	169 x 117 x 9.1 mm 
+Kindle Voyage	  $199.00 	6" 	300 ppi  Wi-Fi or +3G	180g or 188g	162 x 115 x 7.6 mm 
+	+$20 no advertizement offers					
+	+$60/80 + 3G
+---
+

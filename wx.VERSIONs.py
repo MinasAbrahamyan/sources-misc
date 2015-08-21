@@ -1,0 +1,22 @@
+
+#
+ for f in dir(wx):
+   if f.find("VERSION")!=-1:
+     print f
+#
+MAJOR_VERSION
+MINOR_VERSION
+RELEASE_VERSION
+SUBREL_VERSION
+VERSION
+VERSION_STRING
+
+#---
+print wx.MAJOR_VERSION
+print wx.MINOR_VERSION
+print wx.RELEASE_VERSION
+print wx.SUBREL_VERSION
+print wx.VERSION
+print wx.VERSION_STRING
+
+
