@@ -1,0 +1,1 @@
+python ppi.py >out1.txt
