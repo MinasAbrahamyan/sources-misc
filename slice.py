@@ -1,7 +1,7 @@
 #!env /usr/bin/python 
-# split_in_place.py - split big file in place by chunks, with optional specified size 
+# slice.py - split big file in place by chunks, with optional specified size (default is 2Gb)
 # Works in both python2 and python3
-# Better name: slice a file
+# Former name: split_in_place.py 
 import os, sys, os.path
 _1Mb = 1024*1024
 
