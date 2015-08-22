@@ -101,7 +101,8 @@ def cut_one_chunk_from_end(fname, cur_chunk_sz, i):
   truncate_by(fname, cur_chunk_sz)
   return True
   
-def split_file_by_chunks(fname, chunk_sz):
+def slice_file(fname, chunk_sz):
+  "split_file_by_chunks"
   list_sz = []
   remainder = filesize_b(fname) #returns file size rounded upto nearest 1Mb
   print ("filesize=%d" %remainder)
@@ -128,33 +129,56 @@ def split_file_by_chunks(fname, chunk_sz):
     remainder-= cur_chunk_sz
   print ("Done. written %d chunks." %iterations_cnt)
   print ("To collect back execute: 7z x -mx0 %s.7z.001" %fname)
-  
+
+g_sUsage = """Usage: slice (s|g) [chunk_size_Mb] file
+	where s|g is operation:
+	 s - slice <file> by <chunk_size_Mb> pieces, enumerated; 
+	      default <chunk_size_Mb> vlue is 2048, i.e. 2Gb
+	 g - reglue back sliced chunks into original file, <file> here should be first chunk filename
+	      i.e. look like 'file.7z.0001>'"""
+ 
+def convert_str_to_bsize(chunk_sz_str):
+    chunk_sz = int(chunk_sz_str)
+    chunk_sz *= _1Mb 
+    return chunk_sz
+
 def main(argv):  
   #internal sizes are all in bytes, not Megabytes
   chunk_sz = 1* _1Mb #2048 * _1Mb #default value of splitter
-  fname=""
-  if   len(argv)>=3:
-    chunk_sz_str = argv[1] #chunk size in Megabytes 
-    fname = sys.argv[2]
-    chunk_sz = int(chunk_sz_str)
-    chunk_sz *= _1Mb
-  elif len(argv)==2:
-    fname = argv[1]
+  # Parse command line:
+  oper = ""
+  fname= ""
+  if   len(argv)>=4:
+  	oper = argv[1]
+  	if oper !="s":
+  		print("error")
+  		sys.exit(1)
+    chunk_sz_str = argv[2] #chunk size in Megabytes 
+    chunk_sz = convert_str_to_bsize(chunk_sz_str)
+    fname = sys.argv[3]
+  elif len(argv)==3:
+  	oper = argv[1]
+    fname = argv[2]
   else:
-    print ("Usage: split_in_place [nMbs] filename")
+    print (g_sUsage)
     sys.exit(1)
-    print ("after exit()") #strange ipython-for-Windows
-  # main worker function: 
-  split_file_by_chunks(fname, chunk_sz)
+  # Main worker function:
+  if oper=="s":
+    split_file_by_chunks(fname, chunk_sz)
+  elif: oper=="g":
+  	reglue_in_place(fname)
+  else:
+  	print("Error operation '%s', expecting (s|g)\n" %oper)
+  	print(g_sUsage)
   #sys.exit()
   
 if __name__=='__main__':
   main(sys.argv)
   
-def test_slice(): #test split_file_by_chunks()
+def test_slice(): #test slice_file()
   import shutil
   shutil.copy("dump.orig", "dump") 
-  split_file_by_chunks("dump", 1000000)
+  slice_file("dump", 1000000)
 
 # Reconstruct back: cat
 # >/$ cat dump_*>dump.restored
@@ -228,7 +252,8 @@ def copy_data(fin,fout):
    print ("Error while copying: %s" %str(e))
    return False
 
-def rebuild_in_place(fname_001):
+def reglue_in_place(fname_001):
+  "reconstruct_in_place"
   ok,fname,count = get_rebuilding_fname_n_count(fname_001)
   if not ok:
     print("Error finding large file for rebuild: index parsing error or file doesn't exist")
@@ -240,18 +265,17 @@ def rebuild_in_place(fname_001):
     append_n_remove_ith_chunk_file(fname, chunk_fname)
   print ("Done. Written %d chunks." %(count-1)) #count-1, since chunks enumeration starts with 1
 
-def test_rebuild(): #test rebuild_in_place(fname_001)
+def test_reglue(): #test rebuild_in_place(fname_001)
   # slice
   import shutil
   shutil.copy("dump.orig", "dump") 
-  split_file_by_chunks("dump", 1000000)
+  slice_file("dump", 1000000)
   # reglue
-  rebuild_in_place("dump.7z.001")
+  reglue_in_place("dump.7z.001")
 
   x = os.system("fc dump.orig dump.7z")
   #x = os.system("cmp dump.orig dump.7z") #cmp from MinGW
   if x==0: #"FC: различия не найдены"
-    "ok"
-    pass
-  
-
+    print("test_reglue ok")
+  else:
+  	print("test_reglue failed")
