@@ -257,7 +257,7 @@ def test_reglue1():
 g_sUsage = """Usage: slice (s|g|cut1) [chunk_size_Mb] <file>
  where s|g is slice or glue-back operation:
    s <chunk_size_Mb> - slice <file> by <chunk_size_Mb> pieces, enumerated; 
-        default <chunk_size_Mb> vlue is 2048, i.e. 2Gb
+        default <chunk_size_Mb> value is 2048, i.e. 2Gb
    g - reglue back sliced chunks into original file, <file> here should be first chunk filename
         i.e. it should look like 'file.7z.001'
    cut1 <chunk_size_Mb> - cut off one piece with specified size from the end of <file>; 
