@@ -222,6 +222,11 @@ def reglue_in_place(fname_001):
   for i in range(2, count):
     chunk_fname= fname + ".%03d"%i
     append_n_remove_ith_chunk_file(fname, chunk_fname)
+  # get rid of .7z ending 
+  if fname[-3:]==".7z":
+  	restr_fname = fname[:-3] #+ "-restored"
+  	os.rename(fname, restr_fname)
+
   print ("\nDone. Written %d chunks." %(count-1)) #count-1, since chunks enumeration starts with 1
 
 def test_reglue(orig_test_f): #test rebuild_in_place(fname_001)
