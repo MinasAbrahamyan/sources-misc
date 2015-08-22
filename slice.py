@@ -1,4 +1,5 @@
 #!env /usr/bin/python 
+# -*- coding: utf-8 -*-
 # slice.py - split big file in place by chunks, with optional specified size (default is 2Gb)
 # Works in both python2 and python3
 # Former name: split_in_place.py 
@@ -149,24 +150,25 @@ def main(argv):
   oper = ""
   fname= ""
   if   len(argv)>=4:
-  	oper = argv[1]
-  	if oper !="s":
-  		print("error")
-  		sys.exit(1)
+    oper = argv[1]
+    if oper !="s":
+  	  print("Error, expecting 's' operation\n")
+  	  print(g_sUsage)
+  	  sys.exit(1)
     chunk_sz_str = argv[2] #chunk size in Megabytes 
     chunk_sz = convert_str_to_bsize(chunk_sz_str)
     fname = sys.argv[3]
   elif len(argv)==3:
-  	oper = argv[1]
+    oper = argv[1]
     fname = argv[2]
   else:
     print (g_sUsage)
     sys.exit(1)
   # Main worker function:
-  if oper=="s":
+  if   oper=="s":
     split_file_by_chunks(fname, chunk_sz)
-  elif: oper=="g":
-  	reglue_in_place(fname)
+  elif oper=="g":
+    reglue_in_place(fname)
   else:
   	print("Error operation '%s', expecting (s|g)\n" %oper)
   	print(g_sUsage)
@@ -265,17 +267,22 @@ def reglue_in_place(fname_001):
     append_n_remove_ith_chunk_file(fname, chunk_fname)
   print ("Done. Written %d chunks." %(count-1)) #count-1, since chunks enumeration starts with 1
 
-def test_reglue(): #test rebuild_in_place(fname_001)
+def test_reglue(orig_test_f): #test rebuild_in_place(fname_001)
   # slice
   import shutil
-  shutil.copy("dump.orig", "dump") 
+  shutil.copy(orig_test_f, "dump") 
   slice_file("dump", 1000000)
   # reglue
   reglue_in_place("dump.7z.001")
 
-  x = os.system("fc dump.orig dump.7z")
-  #x = os.system("cmp dump.orig dump.7z") #cmp from MinGW
+  x = os.system("fc %s dump.7z" %orig_test_f)
+  #x = os.system("cmp %s dump.7z" %orig_test_f) #cmp utility is from *nix/MinGW
   if x==0: #"FC: различия не найдены"
-    print("test_reglue ok")
-  else:
-  	print("test_reglue failed")
+    print("test_reglue %s ok" %orig_test_f)
+  else: 
+  	print("test_reglue %s failed" %orig_test_f)
+  return x==0
+
+def test_reglue1():
+  #test_reglue("dump.orig")
+  test_reglue("dump339.rar") #dump339.rar = D:\Шлахтер\Tehnologija kar.rar
