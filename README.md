@@ -21,8 +21,16 @@ All 'slice' operations are in-place, i.e. they do not require more space, on cur
 
 maxlenzero.py
 -------------
-Use this to create zero-filled file with maxial size on the disk.  
+Use this to create zero-filled file with maxmial size on the C: (or D:, etc) disk.  
 Useful for minimizing compressed drive image size.  
+It creates such file, named '0.txt', after uou delete it and resulting drive image will be  
+smaller on the size of free space of operated drive.
+
+ppi.py
+------
+Compare 'ppi' feature, i.e. pixels-per-inch, also called 
+([pixel density](https://en.wikipedia.org/wiki/Pixel_density)), for diverse variety of devices: monitors, tablet and smartphone screens, ebook screens, etc. Uses very simple formula. Information 
+gathered in one place allowing easy comparison of all these devices.
 
 ### .md-markup testing zone:
 README.md Heading-1
