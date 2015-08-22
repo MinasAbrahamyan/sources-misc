@@ -29,7 +29,7 @@ smaller on the size of free space of operated drive.
 ppi.py
 ------
 Compare 'ppi' feature, i.e. pixels-per-inch, also called 
-([pixel density](https://en.wikipedia.org/wiki/Pixel_density)), for diverse variety of devices: monitors, tablet and smartphone screens, ebook screens, etc. Uses very simple formula. Information 
+[pixel density](https://en.wikipedia.org/wiki/Pixel_density), for diverse variety of devices: monitors, tablet and smartphone screens, ebook screens, etc. Uses very simple formula. Information 
 gathered in one place allowing easy comparison of all these devices.
 
 ### .md-markup testing zone:
@@ -50,4 +50,5 @@ line break
 Text attributes *italic*, **bold**, 
 `monospace`, ~~strikethrough~~ .
 
-The [Markdown language](https://en.wikipedia.org/wiki/Markdown).
+The [Markdown language](https://en.wikipedia.org/wiki/Markdown).  
+[Markdown language syntax](http://daringfireball.net/projects/markdown/syntax).
