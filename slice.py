@@ -3,6 +3,17 @@
 # slice.py - split big file in place by chunks, with optional specified size (default is 2Gb)
 # Works in both python2 and python3
 # Former name: split_in_place.py 
+"""
+# Reconstruct back: cat
+# >/$ cat dump_*>dump.restored
+# Bug! Windows version of ">" appends '\r' chars after '\n' chars. corrupting restored file.
+  
+# Reconstruct back: "7z -mx0" (zero-compressor)
+# > 7z x -mx0 dump.7z.001
+# #splitting with 7z on 5Mb chunks is:> 7z a -v5m -mx0 src_file.7z src_file.iso
+
+# Reconstruct back: "slice.py g file.7z.001"  - this utility
+"""
 import os, sys, os.path
 _1Mb = 1024*1024
 
@@ -128,70 +139,16 @@ def slice_file(fname, chunk_sz):
       cur_chunk_sz = chunk_sz
       cut_one_chunk_from_end(fname, cur_chunk_sz, i)
     remainder-= cur_chunk_sz
-  print ("Done. written %d chunks." %iterations_cnt)
-  print ("To collect back execute: 7z x -mx0 %s.7z.001" %fname)
-
-g_sUsage = """Usage: slice (s|g) [chunk_size_Mb] file
-	where s|g is operation:
-	 s - slice <file> by <chunk_size_Mb> pieces, enumerated; 
-	      default <chunk_size_Mb> vlue is 2048, i.e. 2Gb
-	 g - reglue back sliced chunks into original file, <file> here should be first chunk filename
-	      i.e. look like 'file.7z.0001>'"""
- 
-def convert_str_to_bsize(chunk_sz_str):
-    chunk_sz = int(chunk_sz_str)
-    chunk_sz *= _1Mb 
-    return chunk_sz
-
-def main(argv):  
-  #internal sizes are all in bytes, not Megabytes
-  chunk_sz = 1* _1Mb #2048 * _1Mb #default value of splitter
-  # Parse command line:
-  oper = ""
-  fname= ""
-  if   len(argv)>=4:
-    oper = argv[1]
-    if oper !="s":
-  	  print("Error, expecting 's' operation\n")
-  	  print(g_sUsage)
-  	  sys.exit(1)
-    chunk_sz_str = argv[2] #chunk size in Megabytes 
-    chunk_sz = convert_str_to_bsize(chunk_sz_str)
-    fname = sys.argv[3]
-  elif len(argv)==3:
-    oper = argv[1]
-    fname = argv[2]
-  else:
-    print (g_sUsage)
-    sys.exit(1)
-  # Main worker function:
-  if   oper=="s":
-    split_file_by_chunks(fname, chunk_sz)
-  elif oper=="g":
-    reglue_in_place(fname)
-  else:
-  	print("Error operation '%s', expecting (s|g)\n" %oper)
-  	print(g_sUsage)
-  #sys.exit()
-  
-if __name__=='__main__':
-  main(sys.argv)
+  print ("\nDone. %d chunks been written." %iterations_cnt)
+  print ("To collect back execute: \"python slice.py g %s.7z.001\" or \"7z x -mx0 %s.7z.001\"" %(fname,fname))
   
 def test_slice(): #test slice_file()
   import shutil
   shutil.copy("dump.orig", "dump") 
   slice_file("dump", 1000000)
 
-# Reconstruct back: cat
-# >/$ cat dump_*>dump.restored
-# Bug! Windows version of ">" appends '\r' chars after '\n' chars. corrupting restored file.
-  
-# Reconstruct back: "7z -mx0" (zero-compressor)
-# > 7z x -mx0 dump.7z.001
-# #splitting with 7z on 5Mb chunks is:> 7z a -v5m -mx0 src_file.7z src_file.iso
- 
 #=======================================================
-# Rebuild: inplace!
+# Rebuild: in-place
 def get_rebuilding_fname_n_count(fname_001):
   if fname_001[-4] not in [".", "_"]:
     return False,"",0
@@ -265,7 +222,7 @@ def reglue_in_place(fname_001):
   for i in range(2, count):
     chunk_fname= fname + ".%03d"%i
     append_n_remove_ith_chunk_file(fname, chunk_fname)
-  print ("Done. Written %d chunks." %(count-1)) #count-1, since chunks enumeration starts with 1
+  print ("\nDone. Written %d chunks." %(count-1)) #count-1, since chunks enumeration starts with 1
 
 def test_reglue(orig_test_f): #test rebuild_in_place(fname_001)
   # slice
@@ -286,3 +243,51 @@ def test_reglue(orig_test_f): #test rebuild_in_place(fname_001)
 def test_reglue1():
   #test_reglue("dump.orig")
   test_reglue("dump339.rar") #dump339.rar = D:\Шлахтер\Tehnologija kar.rar
+
+#=========
+g_sUsage = """Usage: slice (s|g) [chunk_size_Mb] file
+ where s|g is slice or glue-back operation:
+   s - slice <file> by <chunk_size_Mb> pieces, enumerated; 
+        default <chunk_size_Mb> vlue is 2048, i.e. 2Gb
+   g - reglue back sliced chunks into original file, <file> here should be first chunk filename
+        i.e. look like 'file.7z.0001>'"""
+
+def convert_str_to_bsize(sz_str):
+  "sz_str is number of Megabytes. This func can be elaborated to accept KMGT prefixes"
+  sz = int(sz_str) 
+  sz *= _1Mb 
+  return sz
+
+def main(argv):  
+  #internal sizes are all in bytes, not Megabytes
+  chunk_sz = 1* _1Mb #2048 * _1Mb #default value of splitter
+  # Parse command line:
+  oper = ""
+  fname= ""
+  if   len(argv)>=4:
+    oper = argv[1]
+    if oper !="s":
+  	  print("Error, expecting 's' operation\n")
+  	  print(g_sUsage)
+  	  sys.exit(1)
+    chunk_sz_str = argv[2] #chunk size in Megabytes 
+    chunk_sz = convert_str_to_bsize(chunk_sz_str)
+    fname = sys.argv[3]
+  elif len(argv)==3:
+    oper = argv[1]
+    fname = argv[2]
+  else:
+    print (g_sUsage)
+    sys.exit(1)
+  # Main worker function:
+  if   oper=="s":
+    slice_file(fname, chunk_sz)
+  elif oper=="g":
+    reglue_in_place(fname)
+  else:
+  	print("Error operation '%s', expecting (s|g)\n" %oper)
+  	print(g_sUsage)
+  #sys.exit()
+  
+if __name__=='__main__':
+  main(sys.argv)
