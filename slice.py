@@ -44,6 +44,7 @@ def filesize_Mb(fname):
 
 def copy_tail(fname, cur_chunk_fname, chunk_sz):
   "chunk_sz is in bytes, everywhere in program"
+  res = True
   buf = "" #declare buffer
   j=0
   total_read= 0
@@ -54,6 +55,7 @@ def copy_tail(fname, cur_chunk_fname, chunk_sz):
     endpos = os.fstat(fin.fileno()).st_size
     if endpos - chunk_sz<0:  
       print( "Error! copy_tail() negative offset")
+      return False
     fin.seek(-1*chunk_sz, os.SEEK_END) #negative offset 
     while True:
       buf = fin.read(_1Mb) #copy chunk size, here it is 1Mb  #for debug it was set _1Mb/2 
@@ -68,17 +70,14 @@ def copy_tail(fname, cur_chunk_fname, chunk_sz):
       
       j+=1
       if j%100==0: # Report progress every 100Mb
-        print ("\b\b\b  %sMb..."%j)
-      if False and j>127: #0/1===release/test, 127 = magic test no.
-        print ("\ntest break:i=%s Mb" %j)  #warn the user
-        break #!
+        print (" %sMb" %j)
   except IOError,e:
    print ("Error: can\'t write file %s: %s" %(cur_chunk_fname, str(e)) )
-   return False
-  else: #else-of-try == finally
+   res = False
+  finally: #else-of-try != finally!
    fout.close()
    fin.close()
-   return True
+   return res
    
 def truncate_by(fname, cur_chunk_sz):
   try:
@@ -89,16 +88,20 @@ def truncate_by(fname, cur_chunk_sz):
     if endpos - cur_chunk_sz<0:
       print ("Error! truncate_by() negative offset endpos=%d cur_chunk_sz=%d" \
                %(endpos, cur_chunk_sz))
+      return False
     fout.truncate(endpos - cur_chunk_sz)
+    return True
   except IOError:
    print ("Error: can\'t truncate file %s" %fname)
-  else:
+   return False
+  finally:
    fout.close()
   
 def cut_one_chunk_from_end(fname, cur_chunk_sz, i):
+  " i is here 0-based index, so for file numbers it is incremented by 1."
   print("%d. chunk_size=%d"% (i, cur_chunk_sz))
   if cur_chunk_sz==0:
-    return
+    return False
   
   cur_chunk_fname =  fname + ".7z.%03d"%(i+1)  #was ".%03d"%i  #was "_%03d"%i 
   #special handling for last iteration
@@ -108,9 +111,13 @@ def cut_one_chunk_from_end(fname, cur_chunk_sz, i):
     return False
     
   #copy tail chunk
-  copy_tail(fname, cur_chunk_fname, cur_chunk_sz)
+  res = copy_tail(fname, cur_chunk_fname, cur_chunk_sz)
+  if not res:
+  	return False
   #truncate original file
-  truncate_by(fname, cur_chunk_sz)
+  res = truncate_by(fname, cur_chunk_sz)
+  if not res:
+  	return False
   return True
   
 def slice_file(fname, chunk_sz):
@@ -202,17 +209,14 @@ def copy_data(fin,fout):
       
       j+=1
       if j%100==0: # Report progress every 100Mb
-        print ("\b\b\b  %sMb..."%j)
-      if False and j>127: #0/1===release/test, 127 = magic test no.
-        print ("\ntest break:i=%s Mb" %j)  #warn the user
-        break #!
+        print (" %sMb"%j)
     return True
   except IOError,e:
    print ("Error while copying: %s" %str(e))
    return False
 
 def reglue_in_place(fname_001):
-  "reconstruct_in_place"
+  "reconstruct in-place"
   ok,fname,count = get_rebuilding_fname_n_count(fname_001)
   if not ok:
     print("Error finding large file for rebuild: index parsing error or file doesn't exist")
@@ -224,9 +228,9 @@ def reglue_in_place(fname_001):
     append_n_remove_ith_chunk_file(fname, chunk_fname)
   # get rid of .7z ending 
   if fname[-3:]==".7z":
-  	restr_fname = fname[:-3] #+ "-restored"
+  	restr_fname = fname[:-3] 
   	os.rename(fname, restr_fname)
-
+  
   print ("\nDone. Written %d chunks." %(count-1)) #count-1, since chunks enumeration starts with 1
 
 def test_reglue(orig_test_f): #test rebuild_in_place(fname_001)
@@ -247,15 +251,20 @@ def test_reglue(orig_test_f): #test rebuild_in_place(fname_001)
 
 def test_reglue1():
   #test_reglue("dump.orig")
-  test_reglue("dump339.rar") #dump339.rar = D:\Шлахтер\Tehnologija kar.rar
+  test_reglue("dump339.rar") #dump339.rar = D:\Шлахтер\Tehnologija kar.rar 339Mb data
 
 #=========
-g_sUsage = """Usage: slice (s|g) [chunk_size_Mb] file
+g_sUsage = """Usage: slice (s|g|cut1) [chunk_size_Mb] <file>
  where s|g is slice or glue-back operation:
-   s - slice <file> by <chunk_size_Mb> pieces, enumerated; 
+   s <chunk_size_Mb> - slice <file> by <chunk_size_Mb> pieces, enumerated; 
         default <chunk_size_Mb> vlue is 2048, i.e. 2Gb
    g - reglue back sliced chunks into original file, <file> here should be first chunk filename
-        i.e. look like 'file.7z.0001>'"""
+        i.e. it should look like 'file.7z.001'
+   cut1 <chunk_size_Mb> - cut off one piece with specified size from the end of <file>; 
+      for manual operations.
+      Use cut1 to cut big file on two in place.
+All 'slice' operations are in-place, i.e. they do not require more space, on current disk, then
+ the biggest chunk size is."""
 
 def convert_str_to_bsize(sz_str):
   "sz_str is number of Megabytes. This func can be elaborated to accept KMGT prefixes"
@@ -271,8 +280,8 @@ def main(argv):
   fname= ""
   if   len(argv)>=4:
     oper = argv[1]
-    if oper !="s":
-  	  print("Error, expecting 's' operation\n")
+    if oper not in ["s","cut1"]:
+  	  print("Error, expecting s or cut1 operation\n")
   	  print(g_sUsage)
   	  sys.exit(1)
     chunk_sz_str = argv[2] #chunk size in Megabytes 
@@ -287,12 +296,18 @@ def main(argv):
   # Main worker function:
   if   oper=="s":
     slice_file(fname, chunk_sz)
+  if   oper=="cut1":
+    fsz = filesize_b(fname)
+    n =  fsz // chunk_sz + (1 if (fsz % chunk_sz >0) else 0)
+    print ("%d chunks for this size (would be expected)" %n)
+    cut_one_chunk_from_end(fname, chunk_sz, n-1)
   elif oper=="g":
     reglue_in_place(fname)
   else:
-  	print("Error operation '%s', expecting (s|g)\n" %oper)
+  	print("Error operation '%s', expecting (s|g|cut1)\n" %oper)
   	print(g_sUsage)
   #sys.exit()
   
 if __name__=='__main__':
   main(sys.argv)
+
