@@ -1,0 +1,32 @@
+ netcat.py - Copy data between files and/or tcp network sockets
+  Author: Minas Abrahamyan
+  Edition dates: this is version of 2006.04.16 /copied to new comp 2009.03.16/
+   unedited since then
+   
+Server:
+  D:\> python c:\netcat.py -i ce:3000 -o insa.gz -p1024000
+
+Client: (run from root, important)
+  # cat /dev/ad2s1| gzip |/root/netcopy/netcat.py -o ce:3000 -p 1024000
+
+  # cat /dev/ad2s1| gzip -3|/root/netcopy/netcat.py -o ce:3000 -p 1024000
+
+gzip -N N=1-9, default=6
+
+
+Scheme2:
+Server:
+  D:\> python c:\netcat.py -i ce:3000 -p1024000 | gzip >d:\insa.gz 
+
+Client: (run from root, important)
+  # cat /dev/ad2s1| /root/netcopy/netcat.py -o ce:3000 -p 1024000
+
+==
+server:
+
+D:\>python c:\netcat.py -i ce:3000 -o insa.gz -p1024000
+
+client:
+
+# cat /dev/ad2| gzip -3|/root/netcopy/netcat.py -o ce:3000 -p 1024000
+
