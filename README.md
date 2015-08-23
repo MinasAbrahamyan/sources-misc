@@ -31,6 +31,16 @@ ppi.py
 Compare 'ppi' feature, i.e. pixels-per-inch, also called 
 [pixel density](https://en.wikipedia.org/wiki/Pixel_density), for diverse variety of devices: monitors, tablet and smartphone screens, ebook screens, etc. Uses very simple formula. Information 
 gathered in one place allowing easy comparison of all these devices.
+Original version is from 2012 or 2013.
+
+netcat.py
+---------
+Copy file to another computer, netcat/nc utility of *unix implemented on Python,  
+allowing it to run in any OS, particularly Windows-client and Windows-server.  
+Can also be used to copy virtual machine images from inside to outside, i.e. to host machine,  
+After that it can be compressed and sent further.  
+Original version is from 2005.  
+Usage samples for FreeBSD are in file "netcat.py_usage.txt".
 
 ### .md-markup testing zone:
 README.md Heading-1
